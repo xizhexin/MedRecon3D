@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedRecon3D · 医学影像三维重建与配准系统</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    background: #F5F7FA; color: #1F2328; line-height: 1.65;
+    padding: 48px 20px; font-size: 15px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 34px; font-weight: 700; color: #0C447C; letter-spacing: -0.5px; }
+  .sub { font-size: 16px; color: #4B5563; margin-top: 10px; }
+  .links { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-block; padding: 10px 20px; border-radius: 8px;
+    text-decoration: none; font-weight: 600; font-size: 14.5px;
+    background: #185FA5; color: #fff; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .86; }
+  .btn.ghost { background: #fff; color: #185FA5; border: 1.5px solid #BBD3EA; }
+  h2 {
+    font-size: 17px; font-weight: 600; color: #0C447C; margin: 40px 0 14px;
+    padding-bottom: 7px; border-bottom: 1.5px solid #E2E8F0;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff;
+          border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(16,24,40,.07); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #EEF2F6; }
+  th { background: #F8FAFC; font-weight: 600; color: #475569; font-size: 13px; }
+  tr:last-child td { border-bottom: none; }
+  td.n { font-variant-numeric: tabular-nums; color: #0C447C; font-weight: 600; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 18px;
+          box-shadow: 0 1px 3px rgba(16,24,40,.07); }
+  .card .k { font-size: 13px; color: #64748B; }
+  .card .v { font-size: 24px; font-weight: 700; color: #0C447C; margin: 4px 0 2px;
+             font-variant-numeric: tabular-nums; }
+  .card .d { font-size: 12.5px; color: #64748B; }
+  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid #E2E8F0;
+           font-size: 13px; color: #64748B; }
+  code { background: #EEF2F6; padding: 1px 5px; border-radius: 4px;
+         font-family: Consolas, "SF Mono", monospace; font-size: 13px; color: #2C4A6B; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>MedRecon3D</h1>
+  <p class="sub">
+    面向临床交付的医学影像<b>三维重建 + 多级配准 + 量化测量</b>系统。<br>
+    DICOM 序列进 → 分割、重建、配准、测量全部跑完 → 输出可打印 STL、可旋转三维模型、结构化测量报告、
+    以及一个能上传调用的 HTTP 服务。<br>
+    <b>CPU 与 GPU 两条链路都能跑</b>，并做逐项数值一致性自检。
+  </p>
+
+  <div class="links">
+    <a class="btn" href="demo_recon.html">打开交互式三维重建 →</a>
+    <a class="btn ghost" href="https://github.com/xizhedong/MedRecon3D">GitHub 仓库</a>
+    <a class="btn ghost" href="https://github.com/xizhedong/MedRecon3D#readme">README（含 21 条踩坑记录）</a>
+  </div>
+
+  <h2>关键数字</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="k">GPU 三级配准加速</div>
+      <div class="v">4.09×</div>
+      <div class="d">46.01 s vs CPU 188.04 s（TITAN Xp）</div>
+    </div>
+    <div class="card">
+      <div class="k">重采样一致性</div>
+      <div class="v">0.0004 HU</div>
+      <div class="d">GPU grid_sample vs SimpleITK 最大差</div>
+    </div>
+    <div class="card">
+      <div class="k">刚体配准 TRE</div>
+      <div class="v">0.064 mm</div>
+      <div class="d">已知真值下，亚体素级</div>
+    </div>
+    <div class="card">
+      <div class="k">GPU 自检</div>
+      <div class="v">6 / 6</div>
+      <div class="d">两条链路逐项数值对账通过</div>
+    </div>
+  </div>
+
+  <h2>配准四阶段对照（同一实验，两条链路各跑一遍）</h2>
+  <table>
+    <thead><tr><th>阶段</th><th>体表 Dice</th><th>肺 Dice</th><th>骨 Dice</th><th>NCC</th></tr></thead>
+    <tbody>
+      <tr><td>未配准</td><td class="n">0.9112</td><td class="n">0.2380</td><td class="n">0.3033</td><td class="n">0.3781</td></tr>
+      <tr><td>仅刚性</td><td class="n">0.9515</td><td class="n">0.3819</td><td class="n">0.5500</td><td class="n">0.6123</td></tr>
+      <tr><td>刚性 + 仿射</td><td class="n">0.9727</td><td class="n">0.3771</td><td class="n">0.5022</td><td class="n">0.7108</td></tr>
+      <tr><td>三级全上（含 FFD）</td><td class="n">0.9966</td><td class="n">0.4455</td><td class="n">0.8182</td><td class="n">0.9569</td></tr>
+    </tbody>
+  </table>
+  <p class="sub" style="font-size:13.5px;margin-top:10px">
+    上表为 GPU 链路。注意「刚性 + 仿射」一档 NCC 上升而肺 / 骨 Dice 下降 ——
+    真值里没有全局缩放与剪切分量，仿射级多出的自由度反而在拟合噪声，
+    这个现象 CPU 与 GPU 两侧都复现。详见 README §3.4。
+  </p>
+
+  <h2>M1–M3 重建为何 GPU 没有收益</h2>
+  <table>
+    <thead><tr><th>阶段</th><th>CPU</th><th>GPU</th></tr></thead>
+    <tbody>
+      <tr><td>读取 DICOM</td><td class="n">0.60 s</td><td class="n">0.60 s</td></tr>
+      <tr><td>各向同性重采样</td><td class="n">0.51 s</td><td class="n">0.37 s</td></tr>
+      <tr><td>分割（阈值 + 连通域 + 孔洞填充）</td><td class="n">7.26 s</td><td class="n">7.25 s</td></tr>
+      <tr><td>Marching Cubes + 网格优化 ×3</td><td class="n">17.96 s</td><td class="n">17.45 s</td></tr>
+      <tr><td>HTML / JSON 输出</td><td class="n">0.19 s</td><td class="n">0.19 s</td></tr>
+      <tr><td><b>总计</b></td><td class="n">26.75 s</td><td class="n">26.42 s</td></tr>
+    </tbody>
+  </table>
+  <p class="sub" style="font-size:13.5px;margin-top:10px">
+    瓶颈在 CPU 侧的 Marching Cubes（18 s）与逐层孔洞填充（7 s）——
+    <code>binary_fill_holes</code> 是串行 flood fill，GPU 上要用迭代膨胀硬模拟，反而更慢。
+    所以这一段 GPU 化的部分只占约 1.5 s，<b>收益不在这里，在 M4 配准</b>。
+  </p>
+
+  <footer>
+    数据集：PCIR 人体躯干 CT（107 层 512×512）· 许可 CC0 1.0 ·
+    DOI <a href="https://doi.org/10.5281/zenodo.18225140" style="color:#185FA5;">10.5281/zenodo.18225140</a><br>
+    GPU 链路实测环境：Ubuntu 22.04 · Python 3.12 · torch 2.5.1+cu118 · CUDA 11.8 ·
+    NVIDIA TITAN Xp 12 GB（Pascal / sm_61）
+  </footer>
+
+</div>
+</body>
+</html>

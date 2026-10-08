@@ -40,7 +40,10 @@ SimpleITK / Marching Cubes / 配准 / 网格处理 / 服务化这些工程侧能
 ![分割预览](docs/segmentation_preview.png)
 
 **交互式三维重建** —— 自包含 HTML（plotly.js 已内联，**离线双击即可打开，可旋转缩放**）：
-[`docs/demo_recon.html`](docs/demo_recon.html)
+
+- 🌐 在线打开（GitHub Pages）：**<https://xizhedong.github.io/MedRecon3D/demo_recon.html>**
+- 📁 仓库内：[`docs/demo_recon.html`](docs/demo_recon.html)
+- 项目主页：<https://xizhedong.github.io/MedRecon3D/>
 
 > 上面四张图的原始产物在 `out/`（gitignore），可执行下面的命令重新生成。
 
@@ -302,6 +305,7 @@ MedRecon3D/
 ├── requirements.txt / requirements-gpu.txt
 ├── Dockerfile / .dockerignore / .gitignore
 ├── docs/                      # README 引用的展示图与自检日志（入库）
+│   ├── index.html             # GitHub Pages 主页（在线 demo 入口）
 │   ├── gpu04_stages.png       # 配准四阶段（GPU）
 │   ├── cpu04_stages.png       # 配准四阶段（CPU）
 │   ├── quantify_report.png    # 量化报告图
