@@ -1,0 +1,36 @@
+# ---- 数据（体积大，用 fetch_data.py 按 DOI 重新拉取，不进版本库）----
+data/*
+!data/README.md
+
+# ---- 运行产物（可重新生成；展示用的那几张已复制到 docs/）----
+out/
+*.stl
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+envs/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 临时文件 ----
+*.log
+!docs/*.log
+*.tmp
+_*.html
+_preview.png

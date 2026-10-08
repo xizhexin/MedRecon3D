@@ -1,0 +1,9 @@
+data/
+out/
+service/jobs/
+__pycache__/
+*.pyc
+*.stl
+_wheels/
+.git/
+.venv/
