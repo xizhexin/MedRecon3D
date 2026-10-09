@@ -441,37 +441,13 @@ def experiment_b(fixed: sitk.Image, out_png: Path) -> dict:
 
 
 def _use_cjk_font():
-    """matplotlib 默认字体没有中文字形，不设的话图里中文全是方框。
+    """保留这个函数名（GPU 版会 import 它），实际实现已抽到 `plot_font.py`。
 
-    这是一份**跨平台**候选表，不是随便罗列：Windows 有微软雅黑、macOS 有苹方、
-    Linux 服务器上什么都没有 —— 实测 AutoDL 的 Ubuntu 22.04 镜像里
-    `fc-list | grep -i cjk` 返回 0 条，图里所有中文都渲染成空心方框，
-    还刷了几百行 `Glyph xxx missing from current font` 警告。
-
-    Linux 上装一个（约 5 MB）即可：
-        apt-get install -y fonts-wqy-microhei
-
-    字体名写错不会报错、只会静默退化成方框，所以最后一档留 `DejaVu Sans`
-    （matplotlib 自带，至少拉丁字母和数字是好的），同时把候选按可用性筛选。
+    抽出去的原因：`demo_05_quantify.py` 里当时另写了一份硬编码候选表，
+    在 Linux 服务器上整个图的中文都渲染成了方框。字体设置只该有一份。
     """
-    import matplotlib
-    matplotlib.use("Agg")
-    from matplotlib import font_manager, rcParams
-
-    candidates = ["Microsoft YaHei", "SimHei", "PingFang SC", "Hiragino Sans GB",
-                  "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei",
-                  "WenQuanYi Zen Hei", "Droid Sans Fallback",
-                  "AR PL UMing CN", "DejaVu Sans"]
-    available = {f.name for f in font_manager.fontManager.ttflist}
-    ordered = [c for c in candidates if c in available] or ["DejaVu Sans"]
-    rcParams["font.sans-serif"] = ordered
-    rcParams["axes.unicode_minus"] = False
-    # 一个中文字体都没找到时明确提示，避免"静默出方框"
-    if not any(c in available for c in candidates[:-1]):
-        import warnings
-        warnings.warn("未找到任何中文字体，图中的中文会显示为方框；"
-                      "Linux 上可执行 apt-get install -y fonts-wqy-microhei")
-    return ordered[0]
+    from plot_font import set_cjk_font
+    return set_cjk_font()
 
 
 def render_stages(fixed, moving, aligned, out_png: Path, z: int | None = None):
@@ -541,7 +517,7 @@ def main(argv=None) -> int:
     out_json.write_text(json.dumps(result, ensure_ascii=False, indent=2),
                         encoding="utf-8")
     print(f"      -> {out_json.name}")
-    print(f"\n总耗时 {total}s（纯 CPU）")
+    print(f"\n总耗时 {total}s（SimpleITK / CPU 参考实现）")
     return 0
 
 

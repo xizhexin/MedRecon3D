@@ -23,6 +23,7 @@ import numpy as np
 
 from demo_01_recon import (DICOM_DIR, OUT_DIR, load_dicom_series,
                            resample_isotropic, segment, STRUCT_STYLE)
+from plot_font import set_cjk_font
 
 
 # ------------------------------------------------------------ 测量
@@ -87,10 +88,9 @@ def measure_structure(mask: np.ndarray, spacing_zyx, hu: np.ndarray,
 def render_report(result: dict, out_png: Path):
     import matplotlib
     matplotlib.use("Agg")
-    from matplotlib import rcParams
-    rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "PingFang SC",
-                                   "Source Han Sans SC", "DejaVu Sans"]
-    rcParams["axes.unicode_minus"] = False
+    # 中文字体走共享模块 —— 这里以前硬写了 "Microsoft YaHei" 一串，
+    # 在 Linux 服务器上全部落到方框（详见 plot_font.py 头部）
+    set_cjk_font()
     import matplotlib.pyplot as plt
 
     names, vols, ferets = [], [], []
@@ -118,9 +118,12 @@ def render_report(result: dict, out_png: Path):
     for k, v in result["structures"].items():
         hu = v.get("hu") or {}
         if hu:
+            # y 轴用面向阅读的中文 label，不用内部键名 —— 否则这张子图的
+            # 轴标签是 bone/lung/body，跟左边两张图的中文标签对不上
+            lab = v.get("label", k)
             ax.plot([hu["p05"], hu["median"], hu["p95"]],
-                    [k, k, k], marker="o", linewidth=1.2,
-                    label=f"{v.get('label', k)} (median {hu['median']:.0f})")
+                    [lab, lab, lab], marker="o", linewidth=1.2,
+                    label=f"{lab} (median {hu['median']:.0f})")
     ax.set_xlabel("HU")
     ax.set_title("HU 分布（5% / 中位 / 95%）", fontsize=11)
     ax.legend(fontsize=8, loc="best")
@@ -242,7 +245,7 @@ def main(argv=None) -> int:
     out_json.write_text(json.dumps(result, ensure_ascii=False, indent=2),
                         encoding="utf-8")
     print(f"      -> {out_json.name}")
-    print(f"\n总耗时 {total}s（纯 CPU）")
+    print(f"\n总耗时 {total}s（本模块无 GPU 分支，量测本身不是瓶颈）")
     return 0
 
 

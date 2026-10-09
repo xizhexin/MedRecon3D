@@ -285,6 +285,7 @@ GET  /api/v1/jobs/{id}/result           量化结果 JSON
 ```
 MedRecon3D/
 ├── volume_grid.py             # 重采样输出网格规则（CPU/GPU 唯一来源）
+├── plot_font.py               # matplotlib 中文字体（全项目唯一来源）
 ├── demo_01_recon.py           # M1–M3 主链路（CPU）
 ├── demo_01_recon_gpu.py       # M1–M3 主链路（GPU）
 ├── demo_04_registration.py    # M4 多级配准（CPU，双实验 + TRE）
@@ -502,6 +503,17 @@ docker run --rm -p 8000:8000 -v medrecon_data:/data medrecon3d:0.1.0
 
 21. **`pkill -f fetch_wheels` 会杀掉自己**：同一行命令里含有那个字面量，
     进程自己也匹配上了，任务刚开始就自杀。→ 用字符类技巧 `pkill -f "fetch_[w]heels"`。
+
+22. **matplotlib 找不到中文字体不报错，只是静默出方框**：`rcParams["font.sans-serif"]`
+    里写的字体名在本机不存在时，matplotlib 不会抛异常，而是把每个汉字渲染成空心
+    方框（只刷 `Glyph xxx missing from current font` 的警告）。同一个项目里字体
+    设置**写了两份** —— `demo_04_registration.py` 那份做了可用性筛选，`demo_05_quantify.py`
+    那份是硬编码的 `["Microsoft YaHei", ...]`。本机 Windows 跑没事，一上 Linux 服务器
+    `quantify_report.png` 整张图的中文全变方框。→ 抽成 `plot_font.py` 单一来源，
+    候选表按 `font_manager` 实际可用性筛选，一个都没命中时**主动 warn**。
+    （Linux 上装字体：`apt-get install -y fonts-wqy-microhei && rm -rf ~/.cache/matplotlib`）
+
+    同类的还有 `axes.unicode_minus`：中文字体里 U+2212 常常缺字形，不关掉负号也是方框。
 
 ---
 
